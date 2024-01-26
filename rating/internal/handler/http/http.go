@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/ugurcancaykara/odd-service/rating/internal/controller/rating"
-	model "github.com/ugurcancaykara/odd-service/rating/pkg"
+	model "github.com/ugurcancaykara/odd-service/rating/pkg/model"
 )
 
 // Handler defines a rating service controller.

@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/ugurcancaykara/odd-service/metadata/internal/repository"
-	model "github.com/ugurcancaykara/odd-service/metadata/pkg"
+	model "github.com/ugurcancaykara/odd-service/metadata/pkg/model"
 )
 
 // Repository defines a memory movie metadata repository

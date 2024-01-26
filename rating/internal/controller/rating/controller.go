@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/ugurcancaykara/odd-service/rating/internal/repository"
-	model "github.com/ugurcancaykara/odd-service/rating/pkg"
+	model "github.com/ugurcancaykara/odd-service/rating/pkg/model"
 )
 
 // ErrNotFound is returned when no ratings are found for a

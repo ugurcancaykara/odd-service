@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	metadata "github.com/ugurcancaykara/odd-service/metadata/internal/controller"
+	metadata "github.com/ugurcancaykara/odd-service/metadata/internal/controller/metadata"
 	httphandler "github.com/ugurcancaykara/odd-service/metadata/internal/handler/http"
 	"github.com/ugurcancaykara/odd-service/metadata/internal/repository/memory"
 )

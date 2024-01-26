@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	metadata "github.com/ugurcancaykara/odd-service/metadata/internal/controller"
+	metadata "github.com/ugurcancaykara/odd-service/metadata/internal/controller/metadata"
 	"github.com/ugurcancaykara/odd-service/metadata/internal/repository"
 )
 

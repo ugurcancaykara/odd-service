@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ugurcancaykara/odd-service/rating/internal/repository"
-	model "github.com/ugurcancaykara/odd-service/rating/pkg"
+	model "github.com/ugurcancaykara/odd-service/rating/pkg/model"
 )
 
 // Repository defines a rating repository

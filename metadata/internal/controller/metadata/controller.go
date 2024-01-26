@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/ugurcancaykara/odd-service/metadata/internal/repository"
-	model "github.com/ugurcancaykara/odd-service/metadata/pkg"
+	model "github.com/ugurcancaykara/odd-service/metadata/pkg/model"
 )
 
 // ErrNotFound is returned when a requested record is not found.
