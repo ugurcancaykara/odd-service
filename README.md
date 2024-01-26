@@ -29,7 +29,12 @@ go run *.go --port <PORT>
 * If you run the preceding command, replace `<PORT>` placeholder with unique port numbers that are not in use yet 
 * We used 8081,8082 and 8083, so you can run with port numbers starting with 8084
 
+## Open Consul UI if you use consul client-side service discovery implementation
 
+Open browser and enter:
+```
+  http://localhost:8500/
+```
 
 ## Testing API
 
