@@ -42,3 +42,38 @@ To test API requests, ensure you have at least one healthy instance of each serv
 ```
   curl -v localhost:8083/movie?id=1
 ```
+
+
+
+
+
+
+## Using Protocol Buffers
+
+### Requirements
+- install protoc-gen-go package -> Since I use mac, I used brew to install it 
+```
+brew install protoc-gen-go
+```
+
+
+You can directly install the binary
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+```
+
+Follow the docs for package details -> https://pkg.go.dev/github.com/golang/protobuf/protoc-gen-go
+
+
+
+Since Protocol Buffers offers faster encoding/decoding speed and smaller output size we are going to use it with gRPC.
+Define your data model inside api/ folder at movie.proto then run the following script
+
+```
+protoc -I=api --go_out=. movie.proto
+```
+
+After we defined our go struct data model inside proto file we can generate codes with above command
+
+
+
