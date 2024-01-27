@@ -64,6 +64,9 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 Follow the docs for package details -> https://pkg.go.dev/github.com/golang/protobuf/protoc-gen-go
 
+### For simple benchmark results 
+change directory to -> encodingbenchmark/sizeandcompare
+You can check the benchmark results at encodingbenchmark/sizeandcompare/README.md and also see it yourself
 
 
 Since Protocol Buffers offers faster encoding/decoding speed and smaller output size we are going to use it with gRPC.
