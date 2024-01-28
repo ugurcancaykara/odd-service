@@ -87,3 +87,39 @@ Define service structures and their request, response methods' structures, run t
 
 It's similar to the command that we used in the previous struct generation however, it also passes a --go-grpc_out 
 flag to the compiler. This flag tells the Protocol buffers compiler to generate the service code in gRPC format.
+
+
+
+
+
+## Using Apache Kafka
+
+### Run apache kafka using docker-compose.yml
+Requirements:
+- You need to install docker and docker-compose
+
+You can run kafka docker containers by the following command:
+```
+docker-compose up -d
+```
+
+Now we need our topics to be created, so you can also manually create it by running below command:
+```
+docker-compose exec kafka kafka-topics --create --topic ratings --partitions 1 --replication-factor 1 --bootstrap-server kafka:9092
+```
+
+Publisher client -> Wrote a simple app at the top folder level -> cmd/ratingingester
+- Reads events from ratingdata.json and publish them to locally running kafka topic(rating) thanks to docker.
+
+It will use kafka-topics binary which installed inside kafka container and use it to create a topic named as 'ratings'
+We use this topic name to publish messages from example app(cmd/ratingingester) which reads event data from ratingsdata.json file and publish it to ratings topic
+
+Struct settings -> Created a Event struct for async functionallity of the Ratings API(Haven't done this using protoc gen go). -> ratings/pkg/model/ratings.go
+Ingester(consumer) settings -> Then we implemented our rating service which can be found under the rating/ folder to consume messages from this 'ratings' topic -> rating/internal/ingester/kafka
+Controller settings -> Then controller implementation can be found under -> rating/internal/controller/rating/controller.go. And for now since I didn't automate this process(I use in-memory storage) 
+Program start up settings -> I don't prefer to initialize ingester for now, will initalize later.(rating/cmd/main.go -> new.ratinggateway(repo, nil(nil is for ingester)))
+
+
+
+
+

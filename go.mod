@@ -3,7 +3,9 @@ module github.com/ugurcancaykara/odd-service
 go 1.21.6
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/hashicorp/consul/api v1.27.0
+	google.golang.org/grpc v1.61.0
 	google.golang.org/protobuf v1.32.0
 )
 
@@ -28,6 +30,4 @@ require (
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17 // indirect
-	google.golang.org/grpc v1.61.0 // indirect
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0 // indirect
 )
