@@ -5,14 +5,18 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"time"
 
+	"github.com/ugurcancaykara/odd-service/gen"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery/consul"
 	"github.com/ugurcancaykara/odd-service/rating/internal/controller/rating"
-	httphandler "github.com/ugurcancaykara/odd-service/rating/internal/handler/http"
+	grpchandler "github.com/ugurcancaykara/odd-service/rating/internal/handler/grpc"
+	"github.com/ugurcancaykara/odd-service/rating/internal/ingester/kafka"
 	"github.com/ugurcancaykara/odd-service/rating/internal/repository/memory"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const serviceName = "rating"
@@ -41,10 +45,27 @@ func main() {
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
 	repo := memory.New()
-	ctrl := rating.New(repo)
-	h := httphandler.New(ctrl)
-	http.Handle("/rating", http.HandlerFunc(h.Handle))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+
+	newIngester, err := kafka.NewIngester("localhost", "odd-service-rating-ingester", "ratings")
+	if err != nil {
+		fmt.Println("consumer client olustururken hata verdi")
+		panic(err)
+	}
+
+	// Let's enable kafka consumer client as another goroutine, to trigger it we need to use startingestion alongside other service initialization steps
+	// ctrl := rating.New(repo,nil)
+	ctrl := rating.New(repo, newIngester)
+	h := grpchandler.New(ctrl)
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	srv := grpc.NewServer()
+	reflection.Register(srv)
+	gen.RegisterRatingServiceServer(srv, h)
+	// TODO: fix this command	ctrl.StartIngestion(ctx)
+	ctrl.StartIngestion(ctx)
+	if err := srv.Serve(lis); err != nil {
 		panic(err)
 	}
 }
