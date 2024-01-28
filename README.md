@@ -91,7 +91,6 @@ flag to the compiler. This flag tells the Protocol buffers compiler to generate 
 
 
 
-
 ## Using Apache Kafka
 
 ### Run apache kafka using docker-compose.yml
@@ -122,4 +121,50 @@ Program start up settings -> I don't prefer to initialize ingester for now, will
 
 
 
+## Using MySQL as data storage
+Requirements:
+- You need to install docker and docker-compose
+
+It is inside docker-compose.yaml file alongside kafka and zookeper
+```
+docker-compose up -d
+```
+
+Still you need to run the following command to create table
+
+```
+  CREATE DATABASE movie
+```
+
+And change the running container name inside the below command which uses schema.sql file under the schema folder to create tables inside movie database
+
+```
+  docker exec -i container_name mysql movie -h localhost -p 3306 --protocol=tcp -uroot -ppassword < schema/schema.sql
+```
+
+You can check if the tables were created successfully by running the following command:
+# TODO: this doesn't work fix it
+```
+  docker exec -i container_name mysql movie -h localhost -p 3306 --protocol=tcp -uroot -ppassword -e "SHOW tables"
+```
+
+
+
+
+
+## Testing the API with grpcurl
+After having every resources up and running
+
+Run to see AggregatedRating Value 
+```
+  grpcurl -plaintext -v -d '{"record_id":"1","record_type":"movie"}' localhost:8082 RatingService/GetAggregatedRating
+```
+however you will end up having code: NotFound, since we haven't added any record let's add some.
+
+
+```
+grpcurl -plaintext -d '{"record_id":"1","record_type":"movie","user_id":"keke","rating_value":3}' localhost:8082 RatingService/PutRating
+```
+
+After that, we will have records at our MySQL table, you can run first grpcurl command to see aggregatedvalue response
 
