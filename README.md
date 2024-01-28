@@ -70,13 +70,20 @@ You can check the benchmark results at encodingbenchmark/sizeandcompare/README.m
 
 
 Since Protocol Buffers offers faster encoding/decoding speed and smaller output size we are going to use it with gRPC.
-Define your data model inside api/ folder at movie.proto then run the following script
+Define your data model inside api/ folder at movie.proto 
+After we defined our go struct data model inside proto file we can generate codes with below command
 
 ```
 protoc -I=api --go_out=. movie.proto
 ```
 
-After we defined our go struct data model inside proto file we can generate codes with above command
 
 
+To create service code in gRPC format (MetadataService(and it's rpc funcs and other services etc.))
+Define service structures and their request, response methods' structures, run the below command
+```
+  protoc -I=api --go_out=. --go-grpc_out=. movie.proto
+```
 
+It's similar to the command that we used in the previous struct generation however, it also passes a --go-grpc_out 
+flag to the compiler. This flag tells the Protocol buffers compiler to generate the service code in gRPC format.
