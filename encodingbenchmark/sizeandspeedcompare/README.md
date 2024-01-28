@@ -52,12 +52,12 @@ we reduce the amount of data that we need to send over the network and make our 
 ```
 goos: darwin
 goarch: arm64
-pkg: movieexample.com/cmd/sizecompare
+
 BenchmarkSerializeToJSON-8    	 6534847	       159.3 ns/op
 BenchmarkSerializeToXML-8     	 1000000	      1173 ns/op
 BenchmarkSerializeToProto-8   	13086316	        91.49 ns/op
 PASS
-ok  	movieexample.com/cmd/sizecompare	3.925s
+ok sizecompare	3.925s
 ```
 
 You can test it by running the following command inside encodingbenchmark/sizeandspeedcompare

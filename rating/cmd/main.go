@@ -14,7 +14,7 @@ import (
 	"github.com/ugurcancaykara/odd-service/rating/internal/controller/rating"
 	grpchandler "github.com/ugurcancaykara/odd-service/rating/internal/handler/grpc"
 	"github.com/ugurcancaykara/odd-service/rating/internal/ingester/kafka"
-	"github.com/ugurcancaykara/odd-service/rating/internal/repository/memory"
+	"github.com/ugurcancaykara/odd-service/rating/internal/repository/mysql"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -44,17 +44,18 @@ func main() {
 		}
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
-	repo := memory.New()
-
+	repo, err := mysql.New()
+	if err != nil {
+		panic(err)
+	}
 	newIngester, err := kafka.NewIngester("localhost", "odd-service-rating-ingester", "ratings")
 	if err != nil {
 		fmt.Println("consumer client olustururken hata verdi")
 		panic(err)
 	}
-
-	// Let's enable kafka consumer client as another goroutine, to trigger it we need to use startingestion alongside other service initialization steps
-	// ctrl := rating.New(repo,nil)
 	ctrl := rating.New(repo, newIngester)
+	go ctrl.StartIngestion(ctx)
+
 	h := grpchandler.New(ctrl)
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
 	if err != nil {
@@ -63,8 +64,7 @@ func main() {
 	srv := grpc.NewServer()
 	reflection.Register(srv)
 	gen.RegisterRatingServiceServer(srv, h)
-	// TODO: fix this command	ctrl.StartIngestion(ctx)
-	ctrl.StartIngestion(ctx)
+	fmt.Println("starting grpc server ")
 	if err := srv.Serve(lis); err != nil {
 		panic(err)
 	}

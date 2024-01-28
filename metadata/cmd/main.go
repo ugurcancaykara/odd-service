@@ -11,7 +11,7 @@ import (
 	"github.com/ugurcancaykara/odd-service/gen"
 	"github.com/ugurcancaykara/odd-service/metadata/internal/controller/metadata"
 	grpchandler "github.com/ugurcancaykara/odd-service/metadata/internal/handler/grpc"
-	"github.com/ugurcancaykara/odd-service/metadata/internal/repository/memory"
+	"github.com/ugurcancaykara/odd-service/metadata/internal/repository/mysql"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery/consul"
 	"google.golang.org/grpc"
@@ -43,7 +43,10 @@ func main() {
 		}
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
-	repo := memory.New()
+	repo, err := mysql.New()
+	if err != nil {
+		panic(err)
+	}
 	ctrl := metadata.New(repo)
 	h := grpchandler.New(ctrl)
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
