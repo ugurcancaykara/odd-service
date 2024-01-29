@@ -23,13 +23,12 @@ import (
 const serviceName = "rating"
 
 func main() {
-	// print working directory
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		configPath = "configs/base.yaml"
 	}
-	fmt.Println(dir)
-	f, err := os.Open("configs/base.yaml")
+
+	f, err := os.Open(configPath)
 	if err != nil {
 		panic(err)
 	}

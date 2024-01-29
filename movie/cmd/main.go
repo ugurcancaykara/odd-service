@@ -23,7 +23,11 @@ import (
 const serviceName = "movie"
 
 func main() {
-	f, err := os.Open("configs/base.yaml")
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		configPath = "configs/base.yaml"
+	}
+	f, err := os.Open(configPath)
 	if err != nil {
 		panic(err)
 	}
