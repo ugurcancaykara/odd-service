@@ -46,6 +46,7 @@ func (g *Gateway) Get(ctx context.Context, id string) (*model.Metadata, error) {
 	expBackoff.InitialInterval = 100 * time.Millisecond // Initial retry interval
 	expBackoff.MaxInterval = 5 * time.Second            // Maximum retry interval
 	expBackoff.MaxElapsedTime = 60 * time.Second        // Maximum total time for retries
+	expBackoff.RandomizationFactor = 0.5                // jittering for randomization
 
 	// Create a retry operation with the exponential backoff strategy.
 	var resp *gen.GetMetadataResponse

@@ -36,6 +36,7 @@ func (g *Gateway) GetAggregatedRating(ctx context.Context, recordID model.Record
 	expBackoff.InitialInterval = 100 * time.Millisecond
 	expBackoff.MaxInterval = 5 * time.Second
 	expBackoff.MaxElapsedTime = 60 * time.Second
+	expBackoff.RandomizationFactor = 0.5
 
 	// Create a retry operation with the exponential backoff strategy.
 	var resp *gen.GetAggregatedRatingResponse
