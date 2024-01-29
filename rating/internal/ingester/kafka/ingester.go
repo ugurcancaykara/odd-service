@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/ugurcancaykara/odd-service/rating/pkg/model"
 )
 
@@ -34,7 +34,7 @@ func (i *Ingester) Ingest(ctx context.Context) (chan model.RatingEvent, error) {
 	if err := i.consumer.SubscribeTopics([]string{i.topic}, nil); err != nil {
 		return nil, err
 	}
-
+	fmt.Println("Ingest func before chan")
 	// we create a channel with 1 bufer
 	ch := make(chan model.RatingEvent, 1)
 	go func() {
@@ -55,6 +55,7 @@ func (i *Ingester) Ingest(ctx context.Context) (chan model.RatingEvent, error) {
 				fmt.Println("Unmarshall error: " + err.Error())
 				continue
 			}
+			fmt.Println("event goes to channel which fetched from topic", event)
 			ch <- event
 		}
 	}()
