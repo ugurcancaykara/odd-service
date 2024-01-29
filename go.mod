@@ -13,6 +13,8 @@ require (
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
+	github.com/cenkalti/backoff v2.2.1+incompatible
+	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
