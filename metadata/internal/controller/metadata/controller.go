@@ -3,6 +3,7 @@ package metadata
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/ugurcancaykara/odd-service/metadata/internal/repository"
 	model "github.com/ugurcancaykara/odd-service/metadata/pkg/model"
@@ -31,6 +32,9 @@ func (c *Controller) Get(ctx context.Context, id string) (*model.Metadata, error
 	res, err := c.repo.Get(ctx, id)
 	if err != nil && errors.Is(err, repository.ErrNotFound) {
 		return nil, ErrNotFound
+	} else if err != nil {
+		log.Printf("Failed to get metadata for %v: %v", id, err)
+
 	}
 	return res, err
 }
