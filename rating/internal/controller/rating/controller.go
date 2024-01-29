@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/ugurcancaykara/odd-service/rating/internal/repository"
 	model "github.com/ugurcancaykara/odd-service/rating/pkg/model"
@@ -38,6 +39,17 @@ func (c *Controller) GetAggregatedRating(ctx context.Context, recordID model.Rec
 	if err != nil && err == repository.ErrNotFound {
 		return 0, ErrNotFound
 	} else if err != nil {
+		log.Printf("Failed to get ratings for %v %v: %v", recordID, recordType, err)
+		log.Printf("Fallback: returning locally cached ratings for %v %v", recordID, recordType)
+		// Fallback scenario to increase reliability of a service,
+		// return locally cached ratings in case of mysql db is unavailable
+		// Using fallbacks is an example of graceful degradation - a pracice of handling application failures in a wa
+		// that an application still performs its operations in a limited mode. the movie service would continue processing
+		// requests for getting movie details even if the recommendation feature is unavailable, providing a limited but working
+		// functionality to its users
+
+		// TODO: implement in-memory cache solution
+		// return c.getCachedRatings(recordID, recordType)
 		return 0, err
 	}
 	sum := float64(0)
