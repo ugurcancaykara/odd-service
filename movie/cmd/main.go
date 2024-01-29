@@ -23,7 +23,7 @@ import (
 const serviceName = "movie"
 
 func main() {
-	f, err := os.Open("../configs/base.yaml")
+	f, err := os.Open("configs/base.yaml")
 	if err != nil {
 		panic(err)
 	}

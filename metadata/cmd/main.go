@@ -22,7 +22,7 @@ import (
 const serviceName = "metadata"
 
 func main() {
-	f, err := os.Open("../configs/base.yaml")
+	f, err := os.Open("configs/base.yaml")
 	if err != nil {
 		panic(err)
 	}
