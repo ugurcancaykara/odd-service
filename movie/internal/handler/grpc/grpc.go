@@ -33,10 +33,15 @@ func (h *Handler) GetMovieDetails(ctx context.Context, req *gen.GetMovieDetailsR
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+	var rating float64
+	// If we don't have a rating, we'll get a nil pointer dereference. That's why it is important to check if the pointer is nil or not.
+	if m.Rating != nil {
+		rating = *m.Rating
+	}
 	return &gen.GetMovieDetailsResponse{
 		MovieDetails: &gen.MovieDetails{
 			Metadata: model.MetadataToProto(&m.Metadata),
-			Rating:   *m.Rating,
+			Rating:   rating,
 		},
 	}, nil
 }
