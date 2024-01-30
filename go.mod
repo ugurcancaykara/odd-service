@@ -11,10 +11,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require (
-	github.com/golang/mock v1.6.0
-	github.com/magiconair/properties v1.8.6
-)
+require github.com/golang/mock v1.6.0
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
