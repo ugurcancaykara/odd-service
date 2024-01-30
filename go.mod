@@ -12,6 +12,11 @@ require (
 )
 
 require (
+	github.com/golang/mock v1.6.0
+	github.com/magiconair/properties v1.8.6
+)
+
+require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0
