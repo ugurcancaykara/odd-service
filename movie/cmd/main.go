@@ -18,6 +18,7 @@ import (
 	grpchandler "github.com/ugurcancaykara/odd-service/movie/internal/handler/grpc"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery/consul"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v3"
@@ -26,21 +27,27 @@ import (
 const serviceName = "movie"
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		configPath = "configs/base.yaml"
 	}
 	f, err := os.Open(configPath)
 	if err != nil {
-		panic(err)
+		logger.Fatal("Failed to open configuration", zap.Error(err))
+
 	}
 	defer f.Close()
 	var cfg serviceConfig
 	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
-		panic(err)
+		logger.Fatal("Failed to parse configuration", zap.Error(err))
+
 	}
 	port := cfg.API.Port
-	log.Printf("Starting the movie service on port %s", port)
+
+	logger.Info("Starting the movie service", zap.Int("port", port), zap.String("serviceName", serviceName))
+
 	registry, err := consul.NewRegistry("localhost:8500")
 	if err != nil {
 		panic(err)
@@ -48,13 +55,14 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%s", port)); err != nil {
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
 		panic(err)
 	}
 	go func() {
 		for {
 			if err := registry.ReportHealthyState(instanceID, serviceName); err != nil {
-				log.Println("Failed to report healthy state: " + err.Error())
+				logger.Error("Failed to report healthy state", zap.Error(err))
+
 			}
 			time.Sleep(1 * time.Second)
 		}
@@ -63,8 +71,8 @@ func main() {
 	metadataGateway := metadatagateway.New(registry)
 	ratingGateway := ratinggateway.New(registry)
 	ctrl := movie.New(ratingGateway, metadataGateway)
-	h := grpchandler.New(ctrl)
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", port))
+	h := grpchandler.New(ctrl, logger)
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

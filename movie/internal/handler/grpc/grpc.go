@@ -7,6 +7,7 @@ import (
 	"github.com/ugurcancaykara/odd-service/gen"
 	"github.com/ugurcancaykara/odd-service/metadata/pkg/model"
 	"github.com/ugurcancaykara/odd-service/movie/internal/controller/movie"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -14,16 +15,19 @@ import (
 // Handler defines a movie gRPC handler.
 type Handler struct {
 	gen.UnimplementedMovieServiceServer
-	ctrl *movie.Controller
+	ctrl   *movie.Controller
+	logger *zap.Logger
 }
 
 // New creates a new movie gRPC handler.
-func New(ctrl *movie.Controller) *Handler {
-	return &Handler{ctrl: ctrl}
+func New(ctrl *movie.Controller, logger *zap.Logger) *Handler {
+	return &Handler{ctrl: ctrl, logger: logger}
 }
 
 // GetMovieDetails returns moviie details by id.
 func (h *Handler) GetMovieDetails(ctx context.Context, req *gen.GetMovieDetailsRequest) (*gen.GetMovieDetailsResponse, error) {
+	logger := h.logger.With(zap.String("method", "GetMovieDetails"))
+
 	if req == nil || req.MovieId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "nil req or empty id")
 	}
@@ -31,6 +35,8 @@ func (h *Handler) GetMovieDetails(ctx context.Context, req *gen.GetMovieDetailsR
 	if err != nil && errors.Is(err, movie.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	} else if err != nil {
+		logger.Error("Internal error. Means some invariants expected by underlying system has been broken. You need to debug it", zap.Error(err))
+
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	var rating float64

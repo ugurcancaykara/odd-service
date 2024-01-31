@@ -18,6 +18,7 @@ import (
 	grpchandler "github.com/ugurcancaykara/odd-service/rating/internal/handler/grpc"
 	"github.com/ugurcancaykara/odd-service/rating/internal/ingester/kafka"
 	"github.com/ugurcancaykara/odd-service/rating/internal/repository/mysql"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v3"
@@ -26,6 +27,9 @@ import (
 const serviceName = "rating"
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		configPath = "configs/base.yaml"
@@ -33,15 +37,16 @@ func main() {
 
 	f, err := os.Open(configPath)
 	if err != nil {
-		panic(err)
+		logger.Fatal("Failed to open configuration", zap.Error(err))
 	}
 	defer f.Close()
 	var cfg serviceConfig
 	if err = yaml.NewDecoder(f).Decode(&cfg); err != nil {
-		panic(err)
+		logger.Fatal("Failed to parse configuration", zap.Error(err))
+
 	}
 	port := cfg.API.Port
-	log.Printf("Starting the metadata service on port %s", port)
+	logger.Info("Starting the movie service", zap.Int("port", port), zap.String("serviceName", serviceName))
 
 	registry, err := consul.NewRegistry("localhost:8500")
 	if err != nil {
@@ -49,13 +54,14 @@ func main() {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%s", port)); err != nil {
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
 		panic(err)
 	}
 	go func() {
 		for {
 			if err := registry.ReportHealthyState(instanceID, serviceName); err != nil {
-				log.Println("Failed to report healthy state: " + err.Error())
+				logger.Error("Failed to report healthy state", zap.Error(err))
+
 			}
 			time.Sleep(1 * time.Second)
 		}
@@ -67,13 +73,12 @@ func main() {
 	}
 	newIngester, err := kafka.NewIngester("localhost", "odd-service-rating-ingester", "ratings")
 	if err != nil {
-		fmt.Println("consumer client olustururken hata verdi")
-		panic(err)
+		logger.Fatal("Failed to create kafka ingester", zap.Error(err))
 	}
 	ctrl := rating.New(repo, newIngester)
 	go ctrl.StartIngestion(ctx)
 
-	h := grpchandler.New(ctrl)
+	h := grpchandler.New(ctrl, logger)
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
