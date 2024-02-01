@@ -17,6 +17,10 @@ import (
 	"github.com/ugurcancaykara/odd-service/metadata/internal/repository/mysql"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery"
 	"github.com/ugurcancaykara/odd-service/pkg/discovery/consul"
+	"github.com/ugurcancaykara/odd-service/pkg/tracing"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -47,11 +51,23 @@ func main() {
 	port := cfg.API.Port
 	logger.Info("Starting the metadata service", zap.Int("port", port), zap.String("serviceName", serviceName))
 
+	ctx, cancel := context.WithCancel(context.Background())
+
+	tp, err := tracing.NewJaegerProvider(cfg.Jaeger.URL, serviceName)
+	if err != nil {
+		logger.Fatal("Failed to initialize Jaeger provider", zap.Error(err))
+	}
+	defer func() {
+		if err := tp.Shutdown(ctx); err != nil {
+			logger.Fatal("Failed to shut down Jaeger prodiver", zap.Error(err))
+		}
+	}()
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.TraceContext{})
 	registry, err := consul.NewRegistry("localhost:8500")
 	if err != nil {
 		panic(err)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
 
 	instanceID := discovery.GenerateInstanceID(serviceName)
 	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
@@ -76,7 +92,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	reflection.Register(srv)
 	gen.RegisterMetadataServiceServer(srv, h)
 	sigChan := make(chan os.Signal, 1)
@@ -86,6 +102,9 @@ func main() {
 	go func() {
 		defer wg.Done()
 		s := <-sigChan
+		if err := tp.Shutdown(ctx); err != nil {
+			logger.Error("Failed to shut down Jaeger provider", zap.Error(err))
+		}
 		cancel()
 		log.Printf("Received signal %v, attempting graceful shutdown...", s)
 		srv.GracefulStop()

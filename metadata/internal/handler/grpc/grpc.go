@@ -46,7 +46,7 @@ func (h *Handler) PutMetadata(ctx context.Context, req *gen.PutMetadataRequest) 
 	if req == nil || req.Metadata == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "nil req or metadata")
 	}
-	if err := h.ctrl.Put(ctx, model.MetadataFromProto(req.Metadata)); err != nil {
+	if err := h.ctrl.Put(ctx, req.Metadata.Id, model.MetadataFromProto(req.Metadata)); err != nil {
 
 		logger.Error("Internal error. Means some invariants expected by underlying system has been broken. You need to debug it", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, err.Error())
